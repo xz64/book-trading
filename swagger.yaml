@@ -1,0 +1,327 @@
+swagger: "2.0"
+info:
+  version: "1.0.0"
+  title: "Book Trading App"
+  description: "API for book trading"
+  license:
+    name: "MIT"
+host: "xz64-book-trading.herokuapp.com"
+securityDefinitions:
+  CSRFProtection:
+    type: apiKey
+    name: X-Requested-With
+    description: "Required to help prevent CSRF attacks. Set it to XMLHttpRequest"
+    in: header
+  JWT:
+    type: apiKey
+    name: Cookie
+    description: "JWT stored in authToken cookie"
+    in: header
+security:
+  - CSRFProtection: []
+basePath: "/api"
+schemes:
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /books:
+    get:
+      description: "Returns all books or those books owned by a user if ?mine=true"
+      parameters:
+        - name: mine
+          in: query
+          required: false
+          type: boolean
+      responses:
+        200:
+          description: "All the books entered in the system."
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/BookBase"
+    post:
+      description: "Create a book"
+      security:
+        - JWT: []
+      parameters:
+        - name: book
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+                description: "This id must be an id that was returned by /findBooks"
+      responses:
+        200:
+          description: "Book was created"
+          schema:
+            type: object
+  /books/{id}:
+    get:
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: string
+      description: "Get info for specific book"
+      responses:
+        200:
+          description: "Info about the book and its owners"
+          schema:
+            $ref: "#/definitions/Book"
+    delete:
+      description: "Disown a book"
+      security:
+        - JWT: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: string
+      responses:
+        200:
+          description: "Book was disowned. If no one else owns the book it is removed."
+          schema:
+            type: object
+  /findBooks:
+    get:
+      security:
+        - JWT: []
+      parameters:
+        - name: title
+          in: query
+          required: true
+          type: string
+      description: "Find books by title"
+      responses:
+        200:
+          description: "Books that matched the title search"
+          schema:
+            type: array
+            minItems: 0
+            maxItems: 10
+            items:
+              $ref: "#/definitions/BookBase"
+  /profile:
+    put:
+      description: "update profile"
+      security:
+        - JWT: []
+      parameters:
+        - name: profile
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/UserBase"
+      responses:
+        200:
+          description: "Profile was updated"
+          schema:
+            type: object
+  /register:
+    post:
+      description: "create user"
+      parameters:
+        - name: userinfo
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/UserRegister"
+      responses:
+        200:
+          description: "user was created"
+          schema:
+            type: object
+  /login:
+    post:
+      description: "log in"
+      parameters:
+        - name: userinfo
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/UserLogin"
+      responses:
+        200:
+          description: "user was logged in (Set-Cookie header will be returned containing auth token)"
+          schema:
+            type: object
+  /trades:
+    post:
+      security:
+        - JWT: []
+      parameters:
+        - name: trade
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/TradeRequestBase"
+      responses:
+        200:
+          description: "Trade request was created"
+          schema:
+            type: object
+            properties:
+              id:
+                description: "trade request"
+                type: string
+    get:
+      security:
+        - JWT: []
+      responses:
+        200:
+          description: "List of user's trades"
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/UserTradeRequest"
+  /trades/accept/{id}:
+    post:
+      security:
+        - JWT: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: string
+          description: "trade request id"
+      responses:
+        200:
+          description: "Trade request accepted. Any other trade requests involving the same offered items will be canceled"
+          schema:
+            type: object
+  /trades/cancel/{id}:
+    post:
+      security:
+        - JWT: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: string
+          description: "trade request id"
+      responses:
+        200:
+          description: "trade request canceled"
+          schema:
+            type: object
+definitions:
+  BookBase:
+    type: object
+    required:
+      - id
+      - title
+      - imageUrl
+    properties:
+      id:
+        type: string
+      title:
+        type: string
+      imageUrl:
+        type: string
+  UserBase:
+    type: object
+    required:
+      - name
+      - city
+      - state
+    properties:
+      name:
+        type: string
+      city:
+        type: string
+      state:
+        type: string
+  User:
+    type: object
+    allOf:
+      - $ref: "#/definitions/UserBase"
+      - type: object
+        properties:
+          id:
+            type: string
+  UserLogin:
+    type: object
+    required:
+      - username
+      - password
+    properties:
+      username:
+        type: string
+      password:
+        type: string
+  UserRegister:
+    type: object
+    allOf:
+      - $ref: "#/definitions/UserBase"
+      - $ref: "#/definitions/UserLogin"
+      - type: object
+        required:
+          - repeatPassword
+          - captchaResponse
+        properties:
+          repeatPassword:
+            type: string
+          captchaResponse:
+            type: string
+  Book:
+    type: object
+    allOf:
+      - $ref: "#/definitions/BookBase"
+      - type: object
+        properties:
+          owners:
+            type: array
+            items:
+              $ref: "#/definitions/User"
+  TradeRequestBase:
+    type: object
+    required:
+      - offeredBooks
+      - requestedBook
+      - requestedBookOwner
+    properties:
+      offeredBooks:
+        description: "Array of book ids owned by the user"
+        type: array
+        minItems: 1
+        items:
+          description: "book id"
+          type: string
+      requestedBook:
+        description: "requested book id"
+        type: string
+      requestedBookOwner:
+        description: "id of user who owns the book"
+        type: string
+  TradeRequest:
+    type: object
+    allOf:
+      - $ref: "#/definitions/TradeRequestBase"
+      - type: object
+        required:
+          - id
+          - status
+        properties:
+          id:
+            type: string
+            description: "Trade request id"
+          status:
+            type: string
+            enum: ["pending", "accepted"]
+  UserTradeRequest:
+    type: object
+    allOf:
+      - $ref: "#/definitions/TradeRequest"
+      - type: object
+        required:
+          - mine
+        properties:
+          mine:
+            type: boolean
+            description: "Whether or not this trade request is initiated by the user who requested the data"
