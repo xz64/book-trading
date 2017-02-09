@@ -10,5 +10,8 @@
   "license": "MIT",
   "engines": {
     "node": ">=6.9.2 <7"
+  },
+  "dependencies": {
+    "winston": "^2.3.1"
   }
 }
