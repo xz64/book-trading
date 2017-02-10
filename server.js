@@ -1,7 +1,17 @@
 const app = require('koa')();
+const HttpStatus = require('http-status-codes');
 const logger = require('./logger');
 const db = require('./db');
 const config = require('./config');
+
+app.use(function* CSRFProtection(next) {
+  if (this.request.header['x-requested-with'] !== 'XMLHttpRequest') {
+    this.status = HttpStatus.BAD_REQUEST;
+    this.body = { error: 'Missing/incorrect CSRF protection' };
+    return;
+  }
+  yield next;
+});
 
 let server;
 
