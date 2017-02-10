@@ -7,6 +7,16 @@ const conf = convict({
     default: 8080,
     env: 'PORT',
   },
+  mongoURI: {
+    doc: 'The mongodb URI',
+    default: 'mongodb://localhost:27017/booktrading',
+    env: 'MONGODB_URI',
+  },
+  logLevel: {
+    doc: 'logging level',
+    default: 'error',
+    env: 'LOG_LEVEL',
+  },
 });
 
 conf.validate({ strict: true });
