@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const logger = require('./logger');
 const config = require('./config');
 
 mongoose.Promise = Promise;
@@ -14,6 +15,12 @@ const initPromise = new Promise((resolve, reject) => {
 
 module.exports = {
   initialize() {
-    return initPromise;
+    return initPromise
+    .then(() => {
+      logger.info('database initialized');
+    })
+    .catch((err) => {
+      logger.error('database initialization problem', err);
+    });
   },
 };
