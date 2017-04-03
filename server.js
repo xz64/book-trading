@@ -1,8 +1,12 @@
 const app = require('koa')();
 const HttpStatus = require('http-status-codes');
+const bodyParser = require('koa-bodyparser');
 const logger = require('./logger');
 const db = require('./db');
 const config = require('./config');
+const router = require('./routes');
+
+app.use(bodyParser());
 
 app.use(function* CSRFProtection(next) {
   if (this.request.header['x-requested-with'] !== 'XMLHttpRequest') {
@@ -12,6 +16,9 @@ app.use(function* CSRFProtection(next) {
   }
   yield next;
 });
+
+app.use(router.routes());
+app.use(router.allowedMethods());
 
 let server;
 

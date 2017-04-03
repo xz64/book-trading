@@ -6,7 +6,12 @@ const logger = require('../logger');
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
-  username: String,
+  username: {
+    type: String,
+    lowercase: true,
+    trim: true,
+    unique: true,
+  },
   password: String,
   invalidAttempts: {
     type: Number,

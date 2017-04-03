@@ -17,8 +17,13 @@ const conf = convict({
     default: 'error',
     env: 'LOG_LEVEL',
   },
+  recaptchaSecretKey: {
+    doc: 'Secret key for recaptcha',
+    default: 'UNSPECIFIED',
+    env: 'RECAPTCHA_SECRET_KEY',
+  },
 });
 
-conf.validate({ strict: true });
+conf.validate({ allowed: 'strict' });
 
 module.exports = conf;
