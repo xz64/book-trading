@@ -50,15 +50,16 @@ router.post('/register', function* register() {
     return;
   }
 
+  const params = this.request.body;
+
   try {
-    yield recaptchaValidator.promise(conf.get('recaptchaSecretKey'), this.captchaResponse, null);
+    yield recaptchaValidator.promise(conf.get('recaptchaSecretKey'), params.captchaResponse, true);
   } catch (e) {
     this.status = HttpStatus.BAD_REQUEST;
     this.body = { errorKey: msgKeys.INVALID_CAPTCHA_RESPONSE };
     return;
   }
 
-  const params = this.request.body;
   params.username = params.username.toLowerCase();
 
   const existingUser = yield User.findOne({ username: params.username });
