@@ -3,6 +3,7 @@ const session = require('koa-session');
 const passport = require('koa-passport');
 const bodyParser = require('koa-bodyparser');
 const csrf = require('koa-csrf');
+const helmet = require('koa-helmet');
 const logger = require('./logger');
 const db = require('./db');
 const config = require('./config');
@@ -10,6 +11,10 @@ const router = require('./routes');
 const authStrategies = require('./authStrategies');
 
 app.keys = [config.get('sessionSecretKey')];
+
+app.use(helmet({
+  noCache: true,
+}));
 
 app.use(session({
   maxAge: config.get('sessionDurationMs'),

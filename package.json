@@ -24,6 +24,7 @@
     "koa": "^1.4.0",
     "koa-bodyparser": "^2.5.0",
     "koa-csrf": "^2.5.0",
+    "koa-helmet": "^1.1.0",
     "koa-passport": "^1.4.0",
     "koa-router": "^5.4.0",
     "koa-session": "^4.0.1",
