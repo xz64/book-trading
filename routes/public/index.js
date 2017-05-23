@@ -130,4 +130,8 @@ router.post('/register', function* register() {
   this.body = {};
 });
 
+router.get('/session', function* checkSession() { // eslint-disable-line require-yield
+  this.body = { valid: this.isAuthenticated() };
+});
+
 module.exports = router;
