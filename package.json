@@ -23,8 +23,12 @@
     "keymirror": "^0.1.1",
     "koa": "^1.4.0",
     "koa-bodyparser": "^2.5.0",
+    "koa-csrf": "^2.5.0",
+    "koa-passport": "^1.4.0",
     "koa-router": "^5.4.0",
+    "koa-session": "^4.0.1",
     "mongoose": "^4.8.1",
+    "passport-local": "^1.0.0",
     "recaptcha-validator": "^1.0.11",
     "winston": "^2.3.1"
   },

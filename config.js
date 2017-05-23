@@ -22,6 +22,16 @@ const conf = convict({
     default: 'UNSPECIFIED',
     env: 'RECAPTCHA_SECRET_KEY',
   },
+  sessionSecretKey: {
+    doc: 'Secret key for sessions',
+    default: 'UNSPECIFIED',
+    env: 'SESSION_SECRET_KEY',
+  },
+  sessionDurationMs: {
+    doc: 'Session duration in milliseconds',
+    default: 1000 * 60 * 60 * 24, // 24 hours
+    env: 'SESSION_LENGTH',
+  },
 });
 
 conf.validate({ allowed: 'strict' });

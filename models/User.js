@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const co = require('co');
 const argon2 = require('argon2');
 const logger = require('../logger');
+const msgKeys = require('../msgKeys');
 
 const Schema = mongoose.Schema;
 
@@ -28,11 +29,6 @@ const userSchema = new Schema({
 
 const ATTEMPTS_UNTIL_LOCK = 5;
 const LOCK_DURATION_MINUTES = 60;
-
-const LOGIN_ERRORS = {
-  USER_LOCKED: `Due to too many incorrect passwords, your account will remain locked for up to ${LOCK_DURATION_MINUTES} minutes from now.`,
-  USER_PASSWORD_INVALID: 'Username/password invalid',
-};
 
 const hashOptions = {
   timeCost: 100,
@@ -65,9 +61,10 @@ userSchema.pre('save', function passwordMiddleware(next) {
 userSchema.methods.verifyPassword = function verifyPassword(givenPassword) {
   const user = this;
   return co(function* passwordHashVerifier() {
-    const lockExpired = user.lockExpiration.getTime() > Date.now();
-    if (!lockExpired) {
-      throw new Error(LOGIN_ERRORS.USER_LOCKED);
+    const lockValid = user.lockExpiration.getTime() > Date.now();
+    if (lockValid) {
+      // eslint-disable-next-line no-throw-literal
+      throw { error: msgKeys.USER_LOCKED, minutes: LOCK_DURATION_MINUTES };
     }
 
     const match = yield argon2.verify(user.password, givenPassword);
@@ -80,23 +77,24 @@ userSchema.methods.verifyPassword = function verifyPassword(givenPassword) {
 
       yield user.save();
 
-      throw new Error(LOGIN_ERRORS.USER_PASSWORD_INVALID);
+      throw { error: msgKeys.INVALID_USERNAME_PASSWORD }; // eslint-disable-line no-throw-literal
     } else { // correct password
       user.invalidAttempts = 0;
       user.lockExpiration = Date.now();
       yield user.save();
 
-      return true;
+      return user;
     }
   });
 };
 
 userSchema.statics.authenticate = function authenticate(username, password) {
   const model = this;
+  const adjustedUsername = username.toLowerCase();
   return co(function* authenticateGenerator() {
-    const user = yield model.findOne({ username });
+    const user = yield model.findOne({ username: adjustedUsername });
     if (!user) { // user doesn't exist
-      throw new Error(LOGIN_ERRORS.USER_PASSWORD_INVALID);
+      throw { error: msgKeys.INVALID_USERNAME_PASSWORD }; // eslint-disable-line no-throw-literal
     }
 
     return yield user.verifyPassword(password);

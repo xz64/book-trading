@@ -1,24 +1,31 @@
 const app = require('koa')();
-const HttpStatus = require('http-status-codes');
+const session = require('koa-session');
+const passport = require('koa-passport');
 const bodyParser = require('koa-bodyparser');
+const csrf = require('koa-csrf');
 const logger = require('./logger');
 const db = require('./db');
 const config = require('./config');
 const router = require('./routes');
+const authStrategies = require('./authStrategies');
+
+app.keys = [config.get('sessionSecretKey')];
+
+app.use(session({
+  maxAge: config.get('sessionDurationMs'),
+}, app));
 
 app.use(bodyParser());
 
-app.use(function* CSRFProtection(next) {
-  if (this.request.header['x-requested-with'] !== 'XMLHttpRequest') {
-    this.status = HttpStatus.BAD_REQUEST;
-    this.body = { error: 'Missing/incorrect CSRF protection' };
-    return;
-  }
-  yield next;
-});
+authStrategies.forEach(passport.use.bind(passport));
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use(router.routes());
 app.use(router.allowedMethods());
+
+csrf(app);
 
 let server;
 
