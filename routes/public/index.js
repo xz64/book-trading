@@ -127,6 +127,8 @@ router.post('/register', function* register() {
 
   yield user.save();
 
+  yield this.login(user);
+
   this.body = {};
 });
 
