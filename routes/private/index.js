@@ -8,7 +8,7 @@ const router = new Router();
 
 router.use(function* AuthenticatedOnly(next) {
   if (!this.isAuthenticated()) {
-    this.status = HttpStatus.NOT_AUTHORIZED;
+    this.status = HttpStatus.UNAUTHORIZED;
     this.body = {};
     return;
   }
