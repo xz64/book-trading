@@ -12,13 +12,19 @@ securityDefinitions:
     name: X-Requested-With
     description: "Required to help prevent CSRF attacks. Set it to XMLHttpRequest"
     in: header
-  JWT:
+  CSRFProtection2:
+    type: apiKey
+    name: X-CSRF-Token
+    description: "Required to help prevent CSRF attacks. Check /api/csrfToken"
+    in: header
+  SessionCookie:
     type: apiKey
     name: Cookie
-    description: "JWT stored in authToken cookie"
+    description: "Session Cookie"
     in: header
 security:
   - CSRFProtection: []
+  - CSRFProtection2: []
 basePath: "/api"
 schemes:
   - https
@@ -45,7 +51,7 @@ paths:
     post:
       description: "Create a book"
       security:
-        - JWT: []
+        - SessionCookie: []
       parameters:
         - name: book
           in: body
@@ -77,7 +83,7 @@ paths:
     delete:
       description: "Disown a book"
       security:
-        - JWT: []
+        - SessionCookie: []
       parameters:
         - name: id
           in: path
@@ -91,7 +97,7 @@ paths:
   /findBooks:
     get:
       security:
-        - JWT: []
+        - SessionCookie: []
       parameters:
         - name: title
           in: query
@@ -107,11 +113,21 @@ paths:
             maxItems: 10
             items:
               $ref: "#/definitions/BookBase"
+  /user:
+    get:
+      description: "get user profile"
+      security:
+        - SessionCookie: []
+      responses:
+        200:
+          description: "Profile data"
+          schema:
+            $ref: "#/definitions/UserBase"             
   /profile:
     put:
       description: "update profile"
       security:
-        - JWT: []
+        - SessionCookie: []
       parameters:
         - name: profile
           in: body
@@ -137,6 +153,22 @@ paths:
           description: "user was created"
           schema:
             type: object
+  /session:
+    get:
+      description: "check if session is valid"
+      responses:
+        200:
+          description: "an object containing a flag indicating whether the user is logged in or not"
+          schema:
+            $ref: "#/definitions/SessionValidity"
+  /csrfToken:
+    get:
+      description: "get csrf token"
+      responses:
+        200:
+          description: "csrfToken which will be set with X-CSRF-Token in subsequent requests"
+          schema:
+            $ref: "#/definitions/CsrfToken"            
   /login:
     post:
       description: "log in"
@@ -150,11 +182,19 @@ paths:
         200:
           description: "user was logged in (Set-Cookie header will be returned containing auth token)"
           schema:
-            type: object
+            $ref: "#/definitions/CsrfToken"
+  /logout:
+    post:
+      description: "log out"
+      responses:
+        200:
+          description: "user was logged out"
+          schema:
+            type: object            
   /trades:
     post:
       security:
-        - JWT: []
+        - SessionCookie: []
       parameters:
         - name: trade
           in: body
@@ -172,7 +212,7 @@ paths:
                 type: string
     get:
       security:
-        - JWT: []
+        - SessionCookie: []
       responses:
         200:
           description: "List of user's trades"
@@ -183,7 +223,7 @@ paths:
   /trades/accept/{id}:
     post:
       security:
-        - JWT: []
+        - SessionCookie: []
       parameters:
         - name: id
           in: path
@@ -198,7 +238,7 @@ paths:
   /trades/cancel/{id}:
     post:
       security:
-        - JWT: []
+        - SessionCookie: []
       parameters:
         - name: id
           in: path
@@ -245,6 +285,13 @@ definitions:
         properties:
           id:
             type: string
+  SessionValidity:
+    type: object
+    required:
+      - valid
+    properties:
+      valid:
+        type: boolean
   UserLogin:
     type: object
     required:
@@ -254,6 +301,13 @@ definitions:
       username:
         type: string
       password:
+        type: string
+  CsrfToken:
+    type: object
+    required:
+      - csrfToken
+    properties:
+      csrfToken:
         type: string
   UserRegister:
     type: object
