@@ -17,6 +17,11 @@ router.use(function* AuthenticatedOnly(next) {
 
 router.use(csrf());
 
+router.post('/logout', function* logout() { // eslint-disable-line require-yield
+  this.logout();
+  this.body = {};
+});
+
 router.use('', userRoutes.routes(), userRoutes.allowedMethods());
 
 module.exports = router;
