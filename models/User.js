@@ -13,6 +13,10 @@ const userSchema = new Schema({
     trim: true,
     unique: true,
   },
+  fullname: {
+    type: String,
+    trim: true,
+  },
   password: String,
   invalidAttempts: {
     type: Number,

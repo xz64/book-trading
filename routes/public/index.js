@@ -5,6 +5,7 @@ const recaptchaValidator = require('recaptcha-validator');
 const passport = require('koa-passport');
 
 const User = require('../../models/User');
+const UserProfileValidationFields = require('../../validators/user').userProfile;
 const conf = require('../../config');
 const msgKeys = require('../../msgKeys');
 
@@ -13,24 +14,12 @@ const router = new Router();
 const validateRegistration = validator({
   required: true,
   type: 'object',
-  properties: {
+  properties: Object.assign({}, UserProfileValidationFields, {
     username: {
       required: true,
       type: 'string',
       minLength: 1,
       maxLength: 30,
-    },
-    city: {
-      required: true,
-      type: 'string',
-      minLength: 1,
-      maxLength: 30,
-    },
-    state: {
-      required: true,
-      type: 'string',
-      minLength: 2,
-      maxLength: 2,
     },
     password: {
       required: true,
@@ -41,7 +30,7 @@ const validateRegistration = validator({
       required: true,
       type: 'string',
     },
-  },
+  }),
 });
 
 const validateLogin = validator({
@@ -120,6 +109,7 @@ router.post('/register', function* register() {
 
   const user = new User({
     username: params.username,
+    fullname: params.fullname,
     password: params.password,
     city: params.city,
     state: params.state,
