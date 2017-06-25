@@ -13,10 +13,6 @@ const userSchema = new Schema({
     trim: true,
     unique: true,
   },
-  fullname: {
-    type: String,
-    trim: true,
-  },
   password: String,
   invalidAttempts: {
     type: Number,
@@ -26,9 +22,21 @@ const userSchema = new Schema({
     type: Date,
     default: Date.now,
   },
-  name: String,
-  city: String,
-  state: String,
+  fullname: {
+    type: String,
+    trim: true,
+    required: true,
+  },
+  city: {
+    type: String,
+    trim: true,
+    required: true,
+  },
+  state: {
+    type: String,
+    trim: true,
+    required: true,
+  },
 });
 
 const ATTEMPTS_UNTIL_LOCK = 5;
