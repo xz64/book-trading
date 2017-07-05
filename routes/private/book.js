@@ -25,6 +25,11 @@ router.get('/books/:id', function* getBook() {
   }
 });
 
+router.get('/books/mine', function* getMyBooks() {
+  const books = yield Book.find({ owner: this.passport.user });
+  this.body = books.map(book => book.toObject({ versionKey: false }));
+});
+
 router.get('/books', function* getAllBooks() {
   const books = yield Book.find().populate('owner', 'fullname');
   this.body = books.map(book => book.toObject({ versionKey: false }));

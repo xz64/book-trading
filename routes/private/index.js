@@ -4,6 +4,7 @@ const HttpStatus = require('http-status-codes');
 
 const userRoutes = require('./user');
 const bookRoutes = require('./book');
+const tradeRoutes = require('./trade');
 
 const router = new Router();
 
@@ -26,5 +27,7 @@ router.post('/logout', function* logout() { // eslint-disable-line require-yield
 router.use('', userRoutes.routes(), userRoutes.allowedMethods());
 
 router.use('', bookRoutes.routes(), bookRoutes.allowedMethods());
+
+router.use('', tradeRoutes.routes(), tradeRoutes.allowedMethods());
 
 module.exports = router;
