@@ -4,6 +4,7 @@ const passport = require('koa-passport');
 const bodyParser = require('koa-bodyparser');
 const csrf = require('koa-csrf');
 const helmet = require('koa-helmet');
+const koaStatic = require('koa-static');
 const logger = require('./logger');
 const db = require('./db');
 const config = require('./config');
@@ -12,9 +13,7 @@ const authStrategies = require('./authStrategies');
 
 app.keys = [config.get('sessionSecretKey')];
 
-app.use(helmet({
-  noCache: true,
-}));
+app.use(helmet());
 
 app.use(session({
   maxAge: config.get('sessionDurationMs'),
@@ -29,6 +28,8 @@ app.use(passport.session());
 
 app.use(router.routes());
 app.use(router.allowedMethods());
+
+app.use(koaStatic('static'));
 
 csrf(app);
 

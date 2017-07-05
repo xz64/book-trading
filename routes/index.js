@@ -2,10 +2,15 @@ const Router = require('koa-router');
 const HttpStatus = require('http-status-codes');
 const publicRouter = require('./public');
 const privateRouter = require('./private');
+const helmet = require('koa-helmet');
 
 const router = new Router({
   prefix: '/api',
 });
+
+router.use(helmet({
+  noCache: true,
+}));
 
 router.use(function* CSRFProtection(next) {
   if (this.request.header['x-requested-with'] !== 'XMLHttpRequest') {
